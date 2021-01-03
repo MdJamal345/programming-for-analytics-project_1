@@ -1,0 +1,183 @@
+import requests
+from bs4 import BeautifulSoup
+
+
+def ScrapData(URL, heightArrayList, nameArrayList):
+    
+    page = requests.get(URL, verify=False)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    playerContent = soup.find(class_="sidearm-roster-players-container")
+    heightList_players = list(playerContent.find_all(class_="sidearm-roster-player-height"))
+    
+
+    for idx in heightList_players:
+        heightArrayList.append(idx.get_text())
+
+    nameList_players = list(playerContent.find_all(class_="sidearm-roster-player-name"))
+    for idx in nameList_players:
+        name = idx.find('p').get_text().strip()
+        name = name.replace("  ", " ")
+        nameArrayList.append(name)
+
+
+
+def calculate_AVG_HEIGHT(heightList_players):
+    totalInches = 0
+    for height in heightList_players:
+        feet = int(height.split("'")[0])
+        inches = int(height.split("'")[1].split('"')[0])
+        totalInches = totalInches + inches + (feet * 12)
+
+    avgInches = totalInches / len(heightList_players)
+    
+    avgFeet = int(avgInches / 12)
+    remain = int(avgInches % 12)
+
+    avgHeight = str(avgFeet) + "'" + str(remain) + '"'
+
+    return avgHeight
+
+
+
+def list_tall_and_short(nameArray, heightArray):
+    
+    heightArrayInches = []
+
+    for height in heightArray:
+        inches = int(height.split("'")[0]) * 12
+        inches = inches + int(height.split("'")[1].split('"')[0])
+
+        heightArrayInches.append(inches)
+
+    
+    zipped_list = zip(heightArrayInches, nameArray)
+    sorted_pairs = sorted(zipped_list)
+
+    tuples = zip(*sorted_pairs)
+
+    heightArrayInches, nameArray = [list(tuple) for tuple in tuples]
+
+    print("\nThe names and the heights of the 5 shortest players:")
+    for idx in range(5):
+        feet = int(heightArrayInches[idx] / 12)
+        inches = int(heightArrayInches[idx] % 12)
+        height = str(feet) + "'" + str(inches) + '"'
+        print(nameArray[idx] + " " + height)
+
+
+    counter = 0
+    print("\nThe names and the heights of the 5 tallest players:")
+    for idx in reversed(range(len(heightArrayInches) - 1)):
+        feet = int(heightArrayInches[idx] / 12)
+        inches = int(heightArrayInches[idx] % 12)
+        height = str(feet) + "'" + str(inches) + '"'
+        print(nameArray[idx] + " " + height)
+
+        counter += 1
+        if (counter == 5):
+            break
+
+    print("")
+
+
+
+swimming_team_mens_urls = [
+    "https://www.brooklyncollegeathletics.com/sports/mens-swimming-and-diving/roster",
+    "https://athletics.baruch.cuny.edu/sports/mens-swimming-and-diving/roster",
+    "https://yorkathletics.com/sports/mens-swimming-and-diving/roster"
+]
+
+swimming_team_mens_height = []
+swimming_team_mens_name = []
+
+for url in swimming_team_mens_urls:
+    height = []
+    name = []
+    ScrapData(url, height, name)
+
+    list_tall_and_short(name, height)
+
+    swimming_team_mens_height = swimming_team_mens_height + height
+    swimming_team_mens_name = swimming_team_mens_name + name
+
+
+
+swimming_team_womens_urls = [
+    "https://www.brooklyncollegeathletics.com/sports/womens-swimming-and-diving/roster",
+    "https://athletics.baruch.cuny.edu/sports/womens-swimming-and-diving/roster",
+    "https://queensknights.com/sports/womens-swimming-and-diving/roster"
+]
+
+swimming_team_womens_height = []
+swimming_team_womens_name = []
+
+for url in swimming_team_womens_urls:
+    height = []
+    name = []
+    ScrapData(url, height, name)
+
+    list_tall_and_short(name, height)
+
+    swimming_team_womens_height = swimming_team_womens_height + height
+    swimming_team_womens_name = swimming_team_womens_name + name
+
+
+
+volleyball_team_mens_urls = [
+    "https://www.brooklyncollegeathletics.com/sports/mens-volleyball/roster/2019",
+    "https://athletics.baruch.cuny.edu/sports/mens-volleyball/roster",
+    "https://yorkathletics.com/sports/mens-volleyball/roster"
+]
+
+volleyball_team_mens_height = []
+volleyball_team_mens_name = []
+
+for url in volleyball_team_mens_urls:
+    height = []
+    name = []
+    ScrapData(url, height, name)
+
+    list_tall_and_short(name, height)
+
+    volleyball_team_mens_height = volleyball_team_mens_height + height
+    volleyball_team_mens_name = volleyball_team_mens_name + name
+
+
+
+volleyball_team_womens_urls = [
+    "https://www.brooklyncollegeathletics.com/sports/womens-volleyball/roster/2019",
+    "https://athletics.baruch.cuny.edu/sports/womens-volleyball/roster",
+    "https://johnjayathletics.com/sports/womens-volleyball/roster"
+]
+
+volleyball_team_womens_height = []
+volleyball_team_womens_name = []
+
+for url in volleyball_team_womens_urls:
+    height = []
+    name = []
+    ScrapData(url, height, name)
+
+    list_tall_and_short(name, height)
+
+    volleyball_team_womens_height = volleyball_team_womens_height + height
+    volleyball_team_womens_name = volleyball_team_womens_name + name
+
+
+
+avgHeight_Swimming_MENS = calculate_AVG_HEIGHT(swimming_team_mens_height)
+print("Average Height_of_Mens_Swimming DATAFRAME: " + avgHeight_Swimming_MENS + "\n")
+
+avgHeight_Swimming_WOMENS = calculate_AVG_HEIGHT(swimming_team_womens_height)
+print("Average_Height_of_Womens Swimming DATAFRAME: " + avgHeight_Swimming_WOMENS + "\n")
+
+avgHeight_Volley_MENS = calculate_AVG_HEIGHT(volleyball_team_mens_height)
+print("Average_Height_of_Mens_Volleyball DATAFRAME: " + avgHeight_Volley_MENS + "\n")
+
+avgHeight_Volley_WOMENS = calculate_AVG_HEIGHT(volleyball_team_womens_height)
+print("Average_Height_of_Womens_Volleyball_DATAFRAME: " + avgHeight_Volley_WOMENS + "\n")
+
+
+
+
+ 
